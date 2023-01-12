@@ -12,6 +12,12 @@ using std::string;
 
 char gameBoard[3][3];   //represents game board
 
+enum Position {
+                TopLeft, MidLeft, BottomLeft,
+                TopMid, MidMid, BottomMid,
+                TopRight, MidRight, BottomRight
+                };
+
 /*Function Signatures*/
 void printWelcome();
 void setupBoard(char board[3][3]);
@@ -19,6 +25,21 @@ void printBoard(char board[3][3]);
 void playerTurn();
 void compTurn();
 void placePiece(int row, int col, bool isPlayer);
+Position findPosition(int row, int col);
+
+bool threeRow(int row, int col, bool isPlayer);
+bool checkLeft(int row, int col, bool isPlayer);
+bool checkRight(int row, int col, bool isPlayer);
+bool checkLeftRight(int row, int col, bool isPlayer);
+bool checkUp(int row, int col, bool isPlayer);
+bool checkDown(int row, int col, bool isPlayer);
+bool checkUpDown(int row, int col, bool isPlayer);
+bool checkUpRight(int row, int col, bool isPlayer);
+bool checkDownRight(int row, int col, bool isPlayer);
+bool checkUpLeft(int row, int col, bool isPlayer);
+bool checkDownLeft(int row, int col, bool isPlayer);
+bool checkUpRightDownLeft(int row, int col, bool isPlayer);
+bool checkUpLeftDownRight(int row, int col, bool isPlayer);
 
 
 int main() {
@@ -37,7 +58,7 @@ int main() {
 
 void printWelcome() {
     char input;
-    cout << "Welcome to Command-Line Tic-Tac-Toe!" << endl;
+    cout << "\nWelcome to Command-Line Tic-Tac-Toe!" << endl;
     cout << "Play 1-on-1 against the computer" << endl;
     cout << "Player Pieces: X" << endl;
     cout << "Comp Pieces: O" << endl;
@@ -45,7 +66,7 @@ void printWelcome() {
     cout << "Press [B] to begin, [E] to exit" << endl;
 
     cin >> input;
-    if (!input == 'b' && !input == 'B') {
+    if (input != 'b' && input != 'B') {
         exit(0);
     }
     //sleep(1.5);
@@ -144,4 +165,113 @@ void placePiece(int row, int col, bool isPlayer) {
             return;
         }
     }
+}
+
+Position findPosition(int row, int col) {
+    switch (row) {
+        case 0: //in Top row
+            switch (col) {
+                case 0:
+                    return Position::TopLeft;
+                    break;
+                case 1:
+                    return Position::TopMid;
+                    break;
+                default:
+                    return Position::TopRight;
+                    break;
+            }
+            break;
+        case 1: //in Mid row
+            switch (col) {
+                case 0:
+                    return Position::MidLeft;
+                    break;
+                case 1:
+                    return Position::MidMid;
+                    break;
+                default:
+                    return Position::MidRight;
+                    break;
+            }
+            break;
+        default:    //in Bottom row
+            switch (col) {
+                case 0:
+                    return Position::BottomLeft;
+                    break;
+                case 1:
+                    return Position::BottomMid;
+                    break;
+                default:
+                    return Position::BottomRight;
+                    break;
+            }
+            break;
+    }
+    return Position::MidMid;
+}
+
+/*
+    This is the "master function" for determining if the most recently-placed
+    game piece forms a three-in-a-row connection. If so, return true, else return false.
+    It operates on the given coordinate's Position value, as determined by the findPosition function.
+*/
+
+bool threeRow(int row, int col, bool isPlayer) {
+    Position pos = findPosition(row, col);
+    switch (pos) {
+        case Position::TopLeft:
+            return (checkRight(row, col, isPlayer) ||
+                    checkDown(row, col, isPlayer) ||
+                    checkDownRight(row, col, isPlayer)
+                    );
+            break;
+        case Position::MidLeft:
+            return (checkRight(row, col, isPlayer) ||
+                    checkUpDown(row, col, isPlayer)
+                    );
+            break;
+        case Position::BottomLeft:
+            return (checkUp(row, col, isPlayer) ||
+                    checkRight(row, col, isPlayer) ||
+                    checkUpRight(row, col, isPlayer)
+                    );
+            break;
+        case Position::TopMid:
+            return (checkDown(row, col, isPlayer) ||
+                    checkLeftRight(row, col, isPlayer)
+                    );
+            break;
+        case Position::MidMid:
+            return (checkLeftRight(row, col, isPlayer) ||
+                    checkUpDown(row, col, isPlayer) ||
+                    checkUpLeftDownRight(row, col, isPlayer) ||
+                    checkUpRightDownLeft(row, col, isPlayer)
+                    );
+            break;
+        case Position::BottomMid:
+            return (checkUp(row, col, isPlayer) ||
+                    checkLeftRight(row, col, isPlayer)
+                    );
+            break;
+        case Position::TopRight:
+            return (checkLeft(row, col, isPlayer) ||
+                    checkDown(row, col, isPlayer) ||
+                    checkDownLeft(row, col, isPlayer)
+                    );
+            break;
+        case Position::MidRight:
+            return (checkLeft(row, col, isPlayer) ||
+                    checkUpDown(row, col, isPlayer)
+                    );
+            break;
+        default:
+            return (checkUp(row, col, isPlayer) ||
+                    checkLeft(row, col, isPlayer) ||
+                    checkUpLeft(row, col, isPlayer)
+                    );
+            break;
+    }
+    return false;
 }

@@ -11,6 +11,8 @@ using std::endl;
 using std::string;
 
 char gameBoard[3][3];   //represents game board
+bool keepPlaying = true;    //represents continued game state
+bool resetState = false;
 
 enum Position {
                 TopLeft, MidLeft, BottomLeft,
@@ -25,6 +27,9 @@ void printBoard(char board[3][3]);
 void playerTurn();
 void compTurn();
 void placePiece(int row, int col, bool isPlayer);
+void printWin(bool isPlayer);
+void reset();
+
 Position findPosition(int row, int col);
 
 bool threeRow(int row, int col, bool isPlayer);
@@ -47,12 +52,25 @@ int main() {
     srand(time(0));
     setupBoard(gameBoard);
     printBoard(gameBoard);
-    while (true) {
-	playerTurn();
-	printBoard(gameBoard);
-	//compTurn();
-	//printBoard(gameBoard);
-    }
+
+    while (keepPlaying) {
+	    playerTurn();
+
+        if (resetState) {
+            resetState = false;
+            continue;
+        }
+
+        if (!keepPlaying) {
+            break;
+        }
+
+	    printBoard(gameBoard);
+
+	    compTurn();
+	    printBoard(gameBoard);
+    }   //gameplay loop
+
     return 0;
 }
 
@@ -96,6 +114,37 @@ void printBoard(char board[3][3]) {
     }
 }
 
+void printWin(bool isPlayer) {
+    printBoard(gameBoard);
+    if (isPlayer) {
+        cout << endl;
+        cout << "Player Wins!" << endl;
+        cout << "GAME OVER" << endl;
+    } else {
+        cout << endl;
+        cout << "Comp Wins!" << endl;
+        cout << "GAME OVER" << endl;
+    }
+    cout << "\nPlay Again?" << endl;
+    cout << "[Y]es or [N]o : ";
+    char input;
+    cin >> input;
+    if (input == 'Y' || input == 'y') {
+        resetState = true;
+        reset();
+    } else {
+        resetState = false;
+        keepPlaying = false;
+    }
+}
+
+void reset() {
+    cout << "\n\n\n\n\n";
+    printWelcome();
+    srand(time(0));
+    setupBoard(gameBoard);
+}
+
 void playerTurn() {
     bool rowGood = false;
     bool colGood = false;
@@ -130,6 +179,10 @@ void playerTurn() {
     }
 
     placePiece(rowNum, colNum, true);
+    bool win = threeRow(rowNum, colNum, true);
+    if (win) {
+        printWin(true);
+    }
 }
 
 void compTurn() {
@@ -146,6 +199,10 @@ void compTurn() {
 	} //validate the row/col coordinates chosen
 	
 	placePiece(rowCoor, colCoor, false);
+    bool win = threeRow(rowCoor, colCoor, false);
+    if (win) {
+        printWin(false);
+    }
 }
 
 void placePiece(int row, int col, bool isPlayer) {
@@ -158,7 +215,6 @@ void placePiece(int row, int col, bool isPlayer) {
                 gameBoard[row][col] = 'O';
                 break;
         }
-        cout << "placePiece result: " << threeRow(row, col, isPlayer) << endl;
     } else {
         if (isPlayer) {
             cout << "Provided coordinates already used. Try again." << endl;
@@ -282,7 +338,6 @@ bool checkLeft(int row, int col, char searchPiece) {
     bool result = true;
     for (int i = col - 1; i >= 0; i--) {
         if (gameBoard[row][i] != searchPiece) {
-            cout << "check left: " << gameBoard[row][i] << endl;
             result = false;
             break;
         }
@@ -294,7 +349,6 @@ bool checkRight(int row, int col, char searchPiece) {
     bool result = true;
     for (int i = col + 1; i <= 2; i++) {
         if (gameBoard[row][i] != searchPiece) {
-            cout << "check right: " << gameBoard[row][i] << endl;
             result = false;
             break;
         }
@@ -306,7 +360,6 @@ bool checkUp(int row, int col, char searchPiece) {
     bool result = true;
     for (int i = row - 1; i >= 0; i--) {
         if (gameBoard[i][col] != searchPiece) {
-            cout << "check up: " << gameBoard[i][col] << endl;
             result = false;
             break;
         }
@@ -318,7 +371,6 @@ bool checkDown(int row, int col, char searchPiece) {
     bool result = true;
     for (int i = row + 1; i <= 2; i++) {
         if (gameBoard[i][col] != searchPiece) {
-            cout << "check down: " << gameBoard[i][col] << endl;
             result = false;
             break;
         }
@@ -332,7 +384,6 @@ bool checkUpRight(int row, int col, char searchPiece) {
     int icol = col + 1;
     while (irow >= 0 && icol <= 2) {
         if (gameBoard[irow][icol] != searchPiece) {
-            cout << "check upright: " << gameBoard[irow][icol] << endl;
             result = false;
             break;
         }
@@ -348,7 +399,6 @@ bool checkDownRight(int row, int col, char searchPiece) {
     int icol = col + 1;
     while (irow <= 2 && icol <= 2) {
         if (gameBoard[irow][icol] != searchPiece) {
-            cout << "check downright: " << gameBoard[irow][icol] << endl;
             result = false;
             break;
         }
@@ -364,7 +414,6 @@ bool checkUpLeft(int row, int col, char searchPiece) {
     int icol = col - 1;
     while (irow >= 0 && icol >= 0) {
         if (gameBoard[irow][icol] != searchPiece) {
-            cout << "check upleft: " << gameBoard[irow][icol] << endl;
             result = false;
             break;
         }
@@ -380,7 +429,6 @@ bool checkDownLeft(int row, int col, char searchPiece) {
     int icol = col - 1;
     while (irow <= 2 && icol >= 0) {
         if (gameBoard[irow][icol] != searchPiece) {
-            cout << "check downleft: " << gameBoard[irow][icol] << endl;
             result = false;
             break;
         }
@@ -394,11 +442,9 @@ bool checkLeftRight(int row, int col, char searchPiece) {
     bool leftResult = true;
     bool rightResult = true;
     if (gameBoard[row][col - 1] != searchPiece) {
-        cout << "left: " << gameBoard[row][col - 1] << endl;
         leftResult = false;
     }   //if space to left is not also X/O
     if (gameBoard[row][col + 1] != searchPiece) {
-        cout << "right: " << gameBoard[row][col + 1] << endl;
         rightResult = false;
     }   //if space to right is not also X/O
     return (leftResult && rightResult);
@@ -408,11 +454,9 @@ bool checkUpDown(int row, int col, char searchPiece) {
     bool upResult = true;
     bool downResult = true;
     if (gameBoard[row - 1][col] != searchPiece) {
-        cout << "up: " << gameBoard[row - 1][col] << endl;
         upResult = false;
     }   //if space above is not also X/O
     if (gameBoard[row + 1][col] != searchPiece) {
-        cout << "down: " << gameBoard[row + 1][col] << endl;
         downResult = false;
     }   //if space below is not also X/O
     return (upResult && downResult);

@@ -28,18 +28,18 @@ void placePiece(int row, int col, bool isPlayer);
 Position findPosition(int row, int col);
 
 bool threeRow(int row, int col, bool isPlayer);
-bool checkLeft(int row, int col, bool isPlayer);
-bool checkRight(int row, int col, bool isPlayer);
-bool checkLeftRight(int row, int col, bool isPlayer);
-bool checkUp(int row, int col, bool isPlayer);
-bool checkDown(int row, int col, bool isPlayer);
-bool checkUpDown(int row, int col, bool isPlayer);
-bool checkUpRight(int row, int col, bool isPlayer);
-bool checkDownRight(int row, int col, bool isPlayer);
-bool checkUpLeft(int row, int col, bool isPlayer);
-bool checkDownLeft(int row, int col, bool isPlayer);
-bool checkUpRightDownLeft(int row, int col, bool isPlayer);
-bool checkUpLeftDownRight(int row, int col, bool isPlayer);
+bool checkLeft(int row, int col, char searchPiece);
+bool checkRight(int row, int col, char searchPiece);
+bool checkLeftRight(int row, int col, char searchPiece);
+bool checkUp(int row, int col, char searchPiece);
+bool checkDown(int row, int col, char searchPiece);
+bool checkUpDown(int row, int col, char searchPiece);
+bool checkUpRight(int row, int col, char searchPiece);
+bool checkDownRight(int row, int col, char searchPiece);
+bool checkUpLeft(int row, int col, char searchPiece);
+bool checkDownLeft(int row, int col, char searchPiece);
+bool checkUpRightDownLeft(int row, int col, char searchPiece);
+bool checkUpLeftDownRight(int row, int col, char searchPiece);
 
 
 int main() {
@@ -50,8 +50,8 @@ int main() {
     while (true) {
 	playerTurn();
 	printBoard(gameBoard);
-	compTurn();
-	printBoard(gameBoard);
+	//compTurn();
+	//printBoard(gameBoard);
     }
     return 0;
 }
@@ -158,6 +158,7 @@ void placePiece(int row, int col, bool isPlayer) {
                 gameBoard[row][col] = 'O';
                 break;
         }
+        cout << "placePiece result: " << threeRow(row, col, isPlayer) << endl;
     } else {
         if (isPlayer) {
             cout << "Provided coordinates already used. Try again." << endl;
@@ -220,58 +221,223 @@ Position findPosition(int row, int col) {
 
 bool threeRow(int row, int col, bool isPlayer) {
     Position pos = findPosition(row, col);
+    char searchPiece = isPlayer ? 'X' : 'O';
     switch (pos) {
         case Position::TopLeft:
-            return (checkRight(row, col, isPlayer) ||
-                    checkDown(row, col, isPlayer) ||
-                    checkDownRight(row, col, isPlayer)
+            return (checkRight(row, col, searchPiece) ||
+                    checkDown(row, col, searchPiece) ||
+                    checkDownRight(row, col, searchPiece)
                     );
             break;
         case Position::MidLeft:
-            return (checkRight(row, col, isPlayer) ||
-                    checkUpDown(row, col, isPlayer)
+            return (checkRight(row, col, searchPiece) ||
+                    checkUpDown(row, col, searchPiece)
                     );
             break;
         case Position::BottomLeft:
-            return (checkUp(row, col, isPlayer) ||
-                    checkRight(row, col, isPlayer) ||
-                    checkUpRight(row, col, isPlayer)
+            return (checkUp(row, col, searchPiece) ||
+                    checkRight(row, col, searchPiece) ||
+                    checkUpRight(row, col, searchPiece)
                     );
             break;
         case Position::TopMid:
-            return (checkDown(row, col, isPlayer) ||
-                    checkLeftRight(row, col, isPlayer)
+            return (checkDown(row, col, searchPiece) ||
+                    checkLeftRight(row, col, searchPiece)
                     );
             break;
         case Position::MidMid:
-            return (checkLeftRight(row, col, isPlayer) ||
-                    checkUpDown(row, col, isPlayer) ||
-                    checkUpLeftDownRight(row, col, isPlayer) ||
-                    checkUpRightDownLeft(row, col, isPlayer)
+            return (checkLeftRight(row, col, searchPiece) ||
+                    checkUpDown(row, col, searchPiece) ||
+                    checkUpLeftDownRight(row, col, searchPiece) ||
+                    checkUpRightDownLeft(row, col, searchPiece)
                     );
             break;
         case Position::BottomMid:
-            return (checkUp(row, col, isPlayer) ||
-                    checkLeftRight(row, col, isPlayer)
+            return (checkUp(row, col, searchPiece) ||
+                    checkLeftRight(row, col, searchPiece)
                     );
             break;
         case Position::TopRight:
-            return (checkLeft(row, col, isPlayer) ||
-                    checkDown(row, col, isPlayer) ||
-                    checkDownLeft(row, col, isPlayer)
+            return (checkLeft(row, col, searchPiece) ||
+                    checkDown(row, col, searchPiece) ||
+                    checkDownLeft(row, col, searchPiece)
                     );
             break;
         case Position::MidRight:
-            return (checkLeft(row, col, isPlayer) ||
-                    checkUpDown(row, col, isPlayer)
+            return (checkLeft(row, col, searchPiece) ||
+                    checkUpDown(row, col, searchPiece)
                     );
             break;
         default:
-            return (checkUp(row, col, isPlayer) ||
-                    checkLeft(row, col, isPlayer) ||
-                    checkUpLeft(row, col, isPlayer)
+            return (checkUp(row, col, searchPiece) ||
+                    checkLeft(row, col, searchPiece) ||
+                    checkUpLeft(row, col, searchPiece)
                     );
             break;
     }
     return false;
+}
+
+bool checkLeft(int row, int col, char searchPiece) {
+    bool result = true;
+    for (int i = col - 1; i >= 0; i--) {
+        if (gameBoard[row][i] != searchPiece) {
+            cout << "check left: " << gameBoard[row][i] << endl;
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
+
+bool checkRight(int row, int col, char searchPiece) {
+    bool result = true;
+    for (int i = col + 1; i <= 2; i++) {
+        if (gameBoard[row][i] != searchPiece) {
+            cout << "check right: " << gameBoard[row][i] << endl;
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
+
+bool checkUp(int row, int col, char searchPiece) {
+    bool result = true;
+    for (int i = row - 1; i >= 0; i--) {
+        if (gameBoard[i][col] != searchPiece) {
+            cout << "check up: " << gameBoard[i][col] << endl;
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
+
+bool checkDown(int row, int col, char searchPiece) {
+    bool result = true;
+    for (int i = row + 1; i <= 2; i++) {
+        if (gameBoard[i][col] != searchPiece) {
+            cout << "check down: " << gameBoard[i][col] << endl;
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
+
+bool checkUpRight(int row, int col, char searchPiece) {
+    bool result = true;
+    int irow = row - 1;
+    int icol = col + 1;
+    while (irow >= 0 && icol <= 2) {
+        if (gameBoard[irow][icol] != searchPiece) {
+            cout << "check upright: " << gameBoard[irow][icol] << endl;
+            result = false;
+            break;
+        }
+        irow--;
+        icol++;
+    }
+    return result;
+}
+
+bool checkDownRight(int row, int col, char searchPiece) {
+    bool result = true;
+    int irow = row + 1;
+    int icol = col + 1;
+    while (irow <= 2 && icol <= 2) {
+        if (gameBoard[irow][icol] != searchPiece) {
+            cout << "check downright: " << gameBoard[irow][icol] << endl;
+            result = false;
+            break;
+        }
+        irow++;
+        icol++;
+    }
+    return result;
+}
+
+bool checkUpLeft(int row, int col, char searchPiece) {
+    bool result = true;
+    int irow = row - 1;
+    int icol = col - 1;
+    while (irow >= 0 && icol >= 0) {
+        if (gameBoard[irow][icol] != searchPiece) {
+            cout << "check upleft: " << gameBoard[irow][icol] << endl;
+            result = false;
+            break;
+        }
+        irow--;
+        icol--;
+    }
+    return result;
+}
+
+bool checkDownLeft(int row, int col, char searchPiece) {
+    bool result = true;
+    int irow = row + 1;
+    int icol = col - 1;
+    while (irow <= 2 && icol >= 0) {
+        if (gameBoard[irow][icol] != searchPiece) {
+            cout << "check downleft: " << gameBoard[irow][icol] << endl;
+            result = false;
+            break;
+        }
+        irow++;
+        icol--;
+    }
+    return result;
+}
+
+bool checkLeftRight(int row, int col, char searchPiece) {
+    bool leftResult = true;
+    bool rightResult = true;
+    if (gameBoard[row][col - 1] != searchPiece) {
+        cout << "left: " << gameBoard[row][col - 1] << endl;
+        leftResult = false;
+    }   //if space to left is not also X/O
+    if (gameBoard[row][col + 1] != searchPiece) {
+        cout << "right: " << gameBoard[row][col + 1] << endl;
+        rightResult = false;
+    }   //if space to right is not also X/O
+    return (leftResult && rightResult);
+}
+
+bool checkUpDown(int row, int col, char searchPiece) {
+    bool upResult = true;
+    bool downResult = true;
+    if (gameBoard[row - 1][col] != searchPiece) {
+        cout << "up: " << gameBoard[row - 1][col] << endl;
+        upResult = false;
+    }   //if space above is not also X/O
+    if (gameBoard[row + 1][col] != searchPiece) {
+        cout << "down: " << gameBoard[row + 1][col] << endl;
+        downResult = false;
+    }   //if space below is not also X/O
+    return (upResult && downResult);
+}
+
+bool checkUpRightDownLeft(int row, int col, char searchPiece) {
+    bool upResult = true;
+    bool downResult = true;
+    if (gameBoard[row - 1][col + 1] != searchPiece) {
+        upResult = false;
+    }   //if space above & right is not also X/O
+    if (gameBoard[row + 1][col - 1] != searchPiece) {
+        downResult = false;
+    }   //if space down & left is not also X/O
+    return (upResult && downResult);
+}
+
+bool checkUpLeftDownRight(int row, int col, char searchPiece) {
+    bool upResult = true;
+    bool downResult = true;
+    if (gameBoard[row - 1][col - 1] != searchPiece) {
+        upResult = false;
+    }   //if space above & left is not also X/O
+    if (gameBoard[row + 1][col + 1] != searchPiece) {
+        downResult = false;
+    }   //if space down & right is not also X/O
+    return (upResult && downResult);
 }

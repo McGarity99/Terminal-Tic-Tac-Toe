@@ -54,21 +54,22 @@ int main() {
     printBoard(gameBoard);
 
     while (keepPlaying) {
-	    playerTurn();
-
-        if (resetState) {
-            resetState = false;
-            continue;
-        }
-
+	    playerTurn();   //player gives coordinates and piece is placed
         if (!keepPlaying) {
+            cout << "BREAKING" << endl;
             break;
+        } else if (resetState) {
+            cout << "RESETTING" << endl;
+            reset();
+            continue;
+        } else {
+            printBoard(gameBoard);
+        }   //if player won and wants to play again, reset; else print the board and continue
+
+        if (keepPlaying) {
+            compTurn();
+	        printBoard(gameBoard);  
         }
-
-	    printBoard(gameBoard);
-
-	    compTurn();
-	    printBoard(gameBoard);
     }   //gameplay loop
 
     return 0;
@@ -81,13 +82,12 @@ void printWelcome() {
     cout << "Player Pieces: X" << endl;
     cout << "Comp Pieces: O" << endl;
     cout << endl;
-    cout << "Press [B] to begin, [E] to exit" << endl;
+    cout << "Press [B] to begin, [E] to exit: ";
 
     cin >> input;
     if (input != 'b' && input != 'B') {
         exit(0);
     }
-    //sleep(1.5);
 }
 
 void setupBoard(char board[3][3]) {
@@ -131,7 +131,6 @@ void printWin(bool isPlayer) {
     cin >> input;
     if (input == 'Y' || input == 'y') {
         resetState = true;
-        reset();
     } else {
         resetState = false;
         keepPlaying = false;
@@ -143,6 +142,9 @@ void reset() {
     printWelcome();
     srand(time(0));
     setupBoard(gameBoard);
+    printBoard(gameBoard);
+    keepPlaying = true;
+    resetState = false;
 }
 
 void playerTurn() {

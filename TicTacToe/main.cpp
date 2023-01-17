@@ -4,6 +4,7 @@
 #include <time.h>
 #include <chrono>
 #include <thread>
+#include <tuple>
 
 using std::cout;
 using std::cin;
@@ -20,6 +21,11 @@ enum Position {
                 TopRight, MidRight, BottomRight
                 };
 
+struct PlayerNextMove {
+    int row = -1;
+    int col = -1;
+} lastPlayerMove;
+
 /*Function Signatures*/
 void printWelcome();
 void setupBoard(char board[3][3]);
@@ -28,6 +34,8 @@ void playerTurn();
 void compTurn();
 void placePiece(int row, int col, bool isPlayer);
 void printWin(bool isPlayer);
+void printDraw();
+void setLastPlayerMove(int row, int col);
 void reset();
 
 Position findPosition(int row, int col);
@@ -45,6 +53,9 @@ bool checkUpLeft(int row, int col, char searchPiece);
 bool checkDownLeft(int row, int col, char searchPiece);
 bool checkUpRightDownLeft(int row, int col, char searchPiece);
 bool checkUpLeftDownRight(int row, int col, char searchPiece);
+bool isDraw();
+
+std::tuple<int, int> fallBackCoordinates(int rowCoor, int colCoor);
 
 
 int main() {
@@ -56,10 +67,8 @@ int main() {
     while (keepPlaying) {
 	    playerTurn();   //player gives coordinates and piece is placed
         if (!keepPlaying) {
-            cout << "BREAKING" << endl;
             break;
         } else if (resetState) {
-            cout << "RESETTING" << endl;
             reset();
             continue;
         } else {
@@ -137,6 +146,22 @@ void printWin(bool isPlayer) {
     }
 }
 
+void printDraw() {
+    printBoard(gameBoard);
+    cout << "It's a DRAW!" << endl;
+    cout << "GAME OVER" << endl;
+    cout << "\nPlay Again?" << endl;
+    cout << "[Y]es or [N]o : ";
+    char input;
+    cin >> input;
+    if (input == 'Y' || input == 'y') {
+        resetState = true;
+    } else {
+        resetState = false;
+        keepPlaying = false;
+    }
+}
+
 void reset() {
     cout << "\n\n\n\n\n";
     printWelcome();
@@ -181,30 +206,70 @@ void playerTurn() {
     }
 
     placePiece(rowNum, colNum, true);
-    bool win = threeRow(rowNum, colNum, true);
-    if (win) {
-        printWin(true);
+    setLastPlayerMove(rowNum, colNum);
+    if (isDraw()) {
+        printDraw();
+    } else {
+        if (threeRow(rowNum, colNum, true)) {
+            printWin(true);
+        }
     }
 }
 
 void compTurn() {
-	int rowCoor = rand() % 3;
-	int colCoor = rand() % 3;
+    int decision = rand() % 2;
+    int rowCoor = rand() % 3;
+    int colCoor = rand() % 3;
 
-	while (gameBoard[rowCoor][colCoor] != '-') {
-		rowCoor = rand() % 3;
-		if (gameBoard[rowCoor][colCoor] == '-') {
-			break;
-		} else {
-			colCoor = rand() % 3;
-		}
-	} //validate the row/col coordinates chosen
+    if (decision == 0) {
+        int attempts = 0;
+        while (gameBoard[rowCoor][colCoor] != '-' || 
+            (abs(rowCoor - lastPlayerMove.row) <= 1) == false ||
+            (abs(colCoor - lastPlayerMove.col) <= 1) == false) {
+                if (!abs(rowCoor - lastPlayerMove.row) <= 1) {
+                    rowCoor = rand() % 3;
+                }
+                if (!abs(colCoor - lastPlayerMove.col) <= 1) {
+                    colCoor = rand() % 3;
+                }
+                attempts++;
+                if (attempts == 3) {
+                    std::tuple<int, int> result = fallBackCoordinates(rowCoor, colCoor);
+                    rowCoor = std::get<0>(result);
+                    colCoor = std::get<1>(result);
+                    break;
+                }
+        }   //find valid coordinates adjacent to the player's last move
+        cout << "Smart row and col: " << rowCoor << " " << colCoor << endl;
+    } else {
+
+        std::tuple<int, int> result = fallBackCoordinates(rowCoor, colCoor);
+        rowCoor = std::get<0>(result);
+        colCoor = std::get<1>(result);
+
+        cout << "Random row and col: " << rowCoor << " " << colCoor << endl;
+    }
 	
 	placePiece(rowCoor, colCoor, false);
-    bool win = threeRow(rowCoor, colCoor, false);
-    if (win) {
-        printWin(false);
+    if (isDraw()) {
+        printDraw();
+    } else {
+        if (threeRow(rowCoor, colCoor, false)) {
+            printWin(false);
+        }
     }
+}
+
+std::tuple<int, int> fallBackCoordinates(int rowCoor, int colCoor) {
+    while (gameBoard[rowCoor][colCoor] != '-') {
+            rowCoor = rand() % 3;
+            if (gameBoard[rowCoor][colCoor] == '-') {
+                break;
+            } else {
+                colCoor = rand() % 3;
+            }
+    } //validate the row/col coordinates chosen
+    return std::make_tuple(rowCoor, colCoor);
 }
 
 void placePiece(int row, int col, bool isPlayer) {
@@ -224,6 +289,22 @@ void placePiece(int row, int col, bool isPlayer) {
             return;
         }
     }
+}
+
+void setLastPlayerMove(int row, int col) {
+    lastPlayerMove.row = row;
+    lastPlayerMove.col = col;
+}
+
+bool isDraw() {
+    for (int i = 0; i <= 2; i++) {
+        for (int j = 0; j <= 2; j++) {
+            if (gameBoard[i][j] == '-') {
+                return false;
+            }
+        }
+    }
+    return false;
 }
 
 Position findPosition(int row, int col) {

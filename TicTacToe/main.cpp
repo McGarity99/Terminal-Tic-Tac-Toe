@@ -1,3 +1,7 @@
+/*
+    Author: Hunter McGarity
+*/
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -21,7 +25,7 @@ enum Position {
                 TopRight, MidRight, BottomRight
                 };
 
-struct PlayerNextMove {
+struct PlayerMove {
     int row = -1;
     int col = -1;
 } lastPlayerMove;
@@ -76,9 +80,16 @@ int main() {
         }   //if player won and wants to play again, reset; else print the board and continue
 
         if (keepPlaying) {
-            compTurn();
-	        printBoard(gameBoard);  
+            compTurn(); 
         }
+        if (!keepPlaying) {
+            break;
+        } else if (resetState) {
+            reset();
+            continue;
+        } else {
+            printBoard(gameBoard);
+        }   //if comp won and player wants to play again, reset; else print the board and continue
     }   //gameplay loop
 
     return 0;
@@ -207,11 +218,11 @@ void playerTurn() {
 
     placePiece(rowNum, colNum, true);
     setLastPlayerMove(rowNum, colNum);
-    if (isDraw()) {
-        printDraw();
+    if (threeRow(rowNum, colNum, true)) {
+        printWin(true);
     } else {
-        if (threeRow(rowNum, colNum, true)) {
-            printWin(true);
+        if (isDraw()) {
+            printDraw();
         }
     }
 }
@@ -222,7 +233,7 @@ void compTurn() {
     int colCoor = rand() % 3;
 
     if (decision == 0) {
-        int attempts = 0;
+        unsigned int attempts = 0;
         while (gameBoard[rowCoor][colCoor] != '-' || 
             (abs(rowCoor - lastPlayerMove.row) <= 1) == false ||
             (abs(colCoor - lastPlayerMove.col) <= 1) == false) {
@@ -240,22 +251,19 @@ void compTurn() {
                     break;
                 }
         }   //find valid coordinates adjacent to the player's last move
-        cout << "Smart row and col: " << rowCoor << " " << colCoor << endl;
     } else {
 
         std::tuple<int, int> result = fallBackCoordinates(rowCoor, colCoor);
         rowCoor = std::get<0>(result);
         colCoor = std::get<1>(result);
-
-        cout << "Random row and col: " << rowCoor << " " << colCoor << endl;
     }
 	
 	placePiece(rowCoor, colCoor, false);
-    if (isDraw()) {
-        printDraw();
+    if (threeRow(rowCoor, colCoor, false)) {
+        printWin(false);
     } else {
-        if (threeRow(rowCoor, colCoor, false)) {
-            printWin(false);
+        if (isDraw()) {
+            printDraw();
         }
     }
 }
@@ -304,7 +312,7 @@ bool isDraw() {
             }
         }
     }
-    return false;
+    return true;
 }
 
 Position findPosition(int row, int col) {

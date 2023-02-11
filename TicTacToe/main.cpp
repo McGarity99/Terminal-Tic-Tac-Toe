@@ -1,5 +1,5 @@
 /*
-    Author: Hunter McGarity
+    Author: Hunter McGarity | 2023
 */
 
 #include <iostream>
@@ -19,12 +19,20 @@ char gameBoard[3][3];   //represents game board
 bool keepPlaying = true;    //represents continued game state
 bool resetState = false;
 
+/*
+    Position enum represents each space on the gameboard.
+    Used primarily for identifying which directions to check for
+    3-in-a-row connections.
+*/
 enum Position {
                 TopLeft, MidLeft, BottomLeft,
                 TopMid, MidMid, BottomMid,
                 TopRight, MidRight, BottomRight
                 };
 
+/*
+    Represents the player's previously-used coordinates.
+*/
 struct PlayerMove {
     int row = -1;
     int col = -1;
@@ -95,6 +103,10 @@ int main() {
     return 0;
 }
 
+/*
+    Print welcome message.
+*/
+
 void printWelcome() {
     char input;
     cout << "\nWelcome to Command-Line Tic-Tac-Toe!" << endl;
@@ -110,6 +122,10 @@ void printWelcome() {
     }
 }
 
+/*
+    Initialize the gameboard to all empty spaces.
+*/
+
 void setupBoard(char board[3][3]) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -117,6 +133,10 @@ void setupBoard(char board[3][3]) {
         }
     }
 }
+
+/*
+    Print the contents of the gameboard.
+*/
 
 void printBoard(char board[3][3]) {
     cout << " ";
@@ -133,6 +153,10 @@ void printBoard(char board[3][3]) {
         cout << endl;
     }
 }
+
+/*
+    Print the appropriate message for a win based on if the victor is the player or the comp.
+*/
 
 void printWin(bool isPlayer) {
     printBoard(gameBoard);
@@ -157,6 +181,10 @@ void printWin(bool isPlayer) {
     }
 }
 
+/*
+    Print an appropirate message if the game ends in a draw.
+*/
+
 void printDraw() {
     printBoard(gameBoard);
     cout << "It's a DRAW!" << endl;
@@ -173,6 +201,10 @@ void printDraw() {
     }
 }
 
+/*
+    Reset the game state to play another round.
+*/
+
 void reset() {
     cout << "\n\n\n\n\n";
     printWelcome();
@@ -182,6 +214,10 @@ void reset() {
     keepPlaying = true;
     resetState = false;
 }
+
+/*
+    Get user input for row, col and place a new piece.
+*/
 
 void playerTurn() {
     bool rowGood = false;
@@ -227,6 +263,11 @@ void playerTurn() {
     }
 }
 
+/*
+    Function for the AI to make "smarter" decisions. Attempt to find an empty space adjacent to the player's last move.
+    If all 3 attempts fail, resort to random empty space.
+*/
+
 void compTurn() {
     int decision = rand() % 2;
     int rowCoor = rand() % 3;
@@ -249,7 +290,7 @@ void compTurn() {
                     rowCoor = std::get<0>(result);
                     colCoor = std::get<1>(result);
                     break;
-                }
+                }   //if unable to find empty adjacent space within 3 attempts, fall back to random coordinates
         }   //find valid coordinates adjacent to the player's last move
     } else {
 
@@ -268,6 +309,11 @@ void compTurn() {
     }
 }
 
+/*
+    Resort to using random coordinates once the "smart foordinates" functionality fails.
+    Return a tuple of the row, col values for the new piece.
+*/
+
 std::tuple<int, int> fallBackCoordinates(int rowCoor, int colCoor) {
     while (gameBoard[rowCoor][colCoor] != '-') {
             rowCoor = rand() % 3;
@@ -279,6 +325,11 @@ std::tuple<int, int> fallBackCoordinates(int rowCoor, int colCoor) {
     } //validate the row/col coordinates chosen
     return std::make_tuple(rowCoor, colCoor);
 }
+
+/*
+    Place a char on the gameboard at the given coordinates.
+    Place 'X' for player, 'O' for comp.
+*/
 
 void placePiece(int row, int col, bool isPlayer) {
     if (gameBoard[row][col] == '-') {
@@ -299,10 +350,18 @@ void placePiece(int row, int col, bool isPlayer) {
     }
 }
 
+/*
+    For the purposes of the AI, log the coordinates of the player's last move.
+*/
+
 void setLastPlayerMove(int row, int col) {
     lastPlayerMove.row = row;
     lastPlayerMove.col = col;
 }
+
+/*
+    Return whether the gameboard is full.
+*/
 
 bool isDraw() {
     for (int i = 0; i <= 2; i++) {
@@ -314,6 +373,10 @@ bool isDraw() {
     }
     return true;
 }
+
+/*
+    Return a Position instance corresponding to the given coordinates.
+*/
 
 Position findPosition(int row, int col) {
     switch (row) {
@@ -425,6 +488,10 @@ bool threeRow(int row, int col, bool isPlayer) {
     return false;
 }
 
+/*
+    Check for a 3-in-a-row connection to the left of the placed piece.
+*/
+
 bool checkLeft(int row, int col, char searchPiece) {
     bool result = true;
     for (int i = col - 1; i >= 0; i--) {
@@ -435,6 +502,10 @@ bool checkLeft(int row, int col, char searchPiece) {
     }
     return result;
 }
+
+/*
+    Check for a 3-in-a-row connection to the right of the placed piece.
+*/
 
 bool checkRight(int row, int col, char searchPiece) {
     bool result = true;
@@ -447,6 +518,10 @@ bool checkRight(int row, int col, char searchPiece) {
     return result;
 }
 
+/*
+    Check for a 3-in-a-row connection above the placed piece.
+*/
+
 bool checkUp(int row, int col, char searchPiece) {
     bool result = true;
     for (int i = row - 1; i >= 0; i--) {
@@ -458,6 +533,10 @@ bool checkUp(int row, int col, char searchPiece) {
     return result;
 }
 
+/*
+    Check for a 3-in-a-row connection below the placed piece.
+*/
+
 bool checkDown(int row, int col, char searchPiece) {
     bool result = true;
     for (int i = row + 1; i <= 2; i++) {
@@ -468,6 +547,10 @@ bool checkDown(int row, int col, char searchPiece) {
     }
     return result;
 }
+
+/*
+    Check for a 3-in-a-row connection to the up and right of the placed piece.
+*/
 
 bool checkUpRight(int row, int col, char searchPiece) {
     bool result = true;
@@ -484,6 +567,10 @@ bool checkUpRight(int row, int col, char searchPiece) {
     return result;
 }
 
+/*
+    Check for a 3-in-a-row connection to the down and left of the placed piece.
+*/
+
 bool checkDownRight(int row, int col, char searchPiece) {
     bool result = true;
     int irow = row + 1;
@@ -498,6 +585,10 @@ bool checkDownRight(int row, int col, char searchPiece) {
     }
     return result;
 }
+
+/*
+    Check for a 3-in-a-row connection to the up and left of the placed piece.
+*/
 
 bool checkUpLeft(int row, int col, char searchPiece) {
     bool result = true;
@@ -514,6 +605,10 @@ bool checkUpLeft(int row, int col, char searchPiece) {
     return result;
 }
 
+/*
+    Check for a 3-in-a-row connection to the down and left of the placed piece.
+*/
+
 bool checkDownLeft(int row, int col, char searchPiece) {
     bool result = true;
     int irow = row + 1;
@@ -529,6 +624,10 @@ bool checkDownLeft(int row, int col, char searchPiece) {
     return result;
 }
 
+/*
+    Check for a 3-in-a-row connection to the left and right of the placed piece.
+*/
+
 bool checkLeftRight(int row, int col, char searchPiece) {
     bool leftResult = true;
     bool rightResult = true;
@@ -540,6 +639,10 @@ bool checkLeftRight(int row, int col, char searchPiece) {
     }   //if space to right is not also X/O
     return (leftResult && rightResult);
 }
+
+/*
+    Check for a 3-in-a-row connection above and below the placed piece.
+*/
 
 bool checkUpDown(int row, int col, char searchPiece) {
     bool upResult = true;
@@ -553,6 +656,10 @@ bool checkUpDown(int row, int col, char searchPiece) {
     return (upResult && downResult);
 }
 
+/*
+    Check for a 3-in-a-row connection to the up-right and down-left of the placed piece.
+*/
+
 bool checkUpRightDownLeft(int row, int col, char searchPiece) {
     bool upResult = true;
     bool downResult = true;
@@ -564,6 +671,10 @@ bool checkUpRightDownLeft(int row, int col, char searchPiece) {
     }   //if space down & left is not also X/O
     return (upResult && downResult);
 }
+
+/*
+    Check for a 3-in-a-row connection to the up-left and down-right of the placed piece.
+*/
 
 bool checkUpLeftDownRight(int row, int col, char searchPiece) {
     bool upResult = true;
